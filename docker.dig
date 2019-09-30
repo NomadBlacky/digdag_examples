@@ -1,0 +1,7 @@
+# http://docs.digdag.io/architecture.html#running-tasks-on-docker
+_export:
+  docker:
+    image: ubuntu:14.04
+
++exec_shell:
+  sh>: echo fooooo
