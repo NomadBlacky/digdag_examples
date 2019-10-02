@@ -1,0 +1,9 @@
++check_task:
+  echo>: This task is successfully!
+  _check:
+    echo>: OK!
+
++error_task:
+  sh>: exit 1
+  _error:
+    echo>: Failure!
