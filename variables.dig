@@ -1,5 +1,8 @@
 timezone: Asia/Tokyo
 
+schedule:
+  daily>: 00:00:00
+
 +built_in_variables:
   +timezone:
     # Timezone of this workflow
@@ -48,3 +51,47 @@ timezone: Asia/Tokyo
   +attempt_id:
     # Integer ID of this attempt
     echo>: ${attempt_id}
+
+# The following variables is enabled if "schedule" option is set
++scheduled_workflow_variables:
+  +last_session_time:
+    echo>: ${last_session_time}
+
+  +last_session_date:
+    echo>: ${last_session_date}
+
+  +last_session_date_compact:
+    echo>: ${last_session_date_compact}
+
+  +last_session_local_time:
+    echo>: ${last_session_local_time}
+
+  +last_session_tz_offset:
+    echo>: ${last_session_tz_offset}
+
+  +last_session_unixtime:
+    echo>: ${last_session_unixtime}
+
+  +last_executed_session_time:
+    echo>: ${last_executed_session_time}
+
+  +last_executed_session_unixtime:
+    echo>: ${last_executed_session_unixtime}
+
+  +next_session_time:
+    echo>: ${next_session_time}
+
+  +next_session_date:
+    echo>: ${next_session_date}
+
+  +next_session_date_compact:
+    echo>: ${next_session_date_compact}
+
+  +next_session_local_time:
+    echo>: ${next_session_local_time}
+
+  +next_session_tz_offset:
+    echo>: ${next_session_tz_offset}
+
+  +next_session_unixtime:
+    echo>: ${next_session_unixtime}
