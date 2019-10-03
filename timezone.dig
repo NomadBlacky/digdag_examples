@@ -1,0 +1,5 @@
+# Default is 'UTC'
+timezone: Asia/Tokyo
+
++example:
+  echo>: ${timezone} ${moment().format()}
