@@ -1,0 +1,50 @@
+timezone: Asia/Tokyo
+
++built_in_variables:
+  +timezone:
+    # Timezone of this workflow
+    echo>: ${timezone}
+
+  +project_id:
+    # The project ID of this workflow
+    echo>: ${project_id}
+
+  +session_uuid:
+    # Unique UUID of this session
+    echo>: ${session_uuid}
+  
+  +session_id:
+    # Integer ID of this session
+    echo>: ${session_id}
+  
+  +session_time:
+    # Time of this session with time zone
+    echo>: ${session_time}
+
+  +session_date:
+    # Date part of session_time
+    echo>: ${session_date}
+
+  +session_date_compact:
+    # Date part of session_time (compact) 
+    echo>: ${+session_date_compact}
+
+  +session_local_time:
+    # Local time format of session_time
+    echo>: ${session_local_time}
+
+  +session_tz_offset:
+    # Time zone offset part of session_time
+    echo>: ${session_tz_offset}
+
+  +session_unixtime:
+    # Seconds since the epoch time
+    echo>: ${session_unixtime}
+
+  +task_name:
+    # Name of this task
+    echo>: ${task_name}
+
+  +attempt_id:
+    # Integer ID of this attempt
+    echo>: ${attempt_id}
