@@ -38,41 +38,47 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
 
   val cluster = new Cluster(this, s"$stackName-cluster", ClusterProps.builder().vpc(vpc).build())
 
-  val service = {
-    val taskDefinition = {
-      val taskDef = {
-        val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(1024).build()
-        new FargateTaskDefinition(this, s"$stackName-task-definition", props)
-      }
+  val service = new DigdagServerFagateService(this, DigdagServerServiceProp(vpc, cluster, conf.serverPort))
+}
 
-      val containerOption = ContainerDefinitionOptions.builder()
-        .image(ContainerImage.fromRegistry("myui/digdag-server"))
-        .build()
-      val container = taskDef.addContainer(s"$stackName-container", containerOption)
-      container.addPortMappings(PortMapping.builder().containerPort(conf.serverPort).build())
+case class DigdagServerServiceProp(vpc: Vpc, cluster: Cluster, serverPort: Int)
 
-      taskDef
+class DigdagServerFagateService(scope: Construct, prop: DigdagServerServiceProp)
+  extends Construct(scope, "digdag-server-fagate-service") {
+
+  val taskDefinition = {
+    val taskDef = {
+      val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(1024).build()
+      new FargateTaskDefinition(this, s"task-definition", props)
     }
 
-    val securityGroup = {
-      val sgname = s"$stackName-service-security-group"
-      val props = SecurityGroupProps.builder().vpc(vpc).securityGroupName(sgname).allowAllOutbound(true).build()
-      val sg = new SecurityGroup(this, sgname, props)
-      sg.addIngressRule(Peer.anyIpv4(), Port.tcp(conf.serverPort))
-      sg
-    }
-
-    val serviceProps = FargateServiceProps.builder()
-      .cluster(cluster)
-      .desiredCount(1)
-      .taskDefinition(taskDefinition)
-      .vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PUBLIC).build())
-      .assignPublicIp(true)
-      .securityGroup(securityGroup)
-      .enableEcsManagedTags(true)
-      .propagateTags(PropagatedTagSource.SERVICE)
+    val containerOption = ContainerDefinitionOptions.builder()
+      .image(ContainerImage.fromRegistry("myui/digdag-server"))
       .build()
+    val container = taskDef.addContainer(s"container", containerOption)
+    container.addPortMappings(PortMapping.builder().containerPort(prop.serverPort).build())
 
-    new FargateService(this, s"$stackName-service", serviceProps)
+    taskDef
   }
+
+  val securityGroup = {
+    val sgname = s"security-group"
+    val props = SecurityGroupProps.builder().vpc(prop.vpc).securityGroupName(sgname).allowAllOutbound(true).build()
+    val sg = new SecurityGroup(this, sgname, props)
+    sg.addIngressRule(Peer.anyIpv4(), Port.tcp(prop.serverPort))
+    sg
+  }
+
+  val serviceProps = FargateServiceProps.builder()
+    .cluster(prop.cluster)
+    .desiredCount(1)
+    .taskDefinition(taskDefinition)
+    .vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PUBLIC).build())
+    .assignPublicIp(true)
+    .securityGroup(securityGroup)
+    .enableEcsManagedTags(true)
+    .propagateTags(PropagatedTagSource.SERVICE)
+    .build()
+
+  new FargateService(this, s"service", serviceProps)
 }
