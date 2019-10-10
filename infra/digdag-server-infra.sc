@@ -11,7 +11,8 @@ import scala.jdk.CollectionConverters._
 
 case class DigdagServerStackConfig(
   serverPort: Int,
-  datadogApiKey: String
+  datadogApiKey: String,
+  desiredCount: Int
 )
 
 @main def compile(): Unit = println("Done")
@@ -48,7 +49,7 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
       .cluster(cluster)
       .taskDefinition(taskDefinition)
       .publicLoadBalancer(true)
-      .desiredCount(1)
+      .desiredCount(conf.desiredCount)
       .enableEcsManagedTags(true)
       .propagateTags(PropagatedTagSource.SERVICE)
       .build()
@@ -72,7 +73,7 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
     val props = FargateServiceProps.builder()
       .cluster(cluster)
       .taskDefinition(taskDefinition)
-      .desiredCount(1)
+      .desiredCount(conf.desiredCount)
       .enableEcsManagedTags(true)
       .propagateTags(PropagatedTagSource.SERVICE)
       .build()
