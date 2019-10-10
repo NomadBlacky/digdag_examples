@@ -7,7 +7,12 @@ import $ivy.`com.github.pureconfig::pureconfig-generic:0.12.1`
 
 import pureconfig._, generic.auto._
 
-case class DigdagServerStackConfig(serverPort: Int)
+import scala.jdk.CollectionConverters._
+
+case class DigdagServerStackConfig(
+  serverPort: Int,
+  datadogApiKey: String
+)
 
 @main def compile(): Unit = println("Done")
 
@@ -48,5 +53,29 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
       .propagateTags(PropagatedTagSource.SERVICE)
       .build()
     new ApplicationLoadBalancedFargateService(this, "digdag-server-fargate-service", props)
+  }
+
+  val datadogService = {
+    val taskDefinition = {
+      val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(512).build()
+      val taskDef = new FargateTaskDefinition(this, "datadog-service", props)
+
+      val containerOptions = ContainerDefinitionOptions.builder()
+        .image(ContainerImage.fromRegistry("datadog/agent"))
+        .environment(Map("DD_API_KEY" -> conf.datadogApiKey, "ECS_FARGATE" -> "true").asJava)
+        .build()
+      taskDef.addContainer("datadog-container", containerOptions)
+
+      taskDef
+    }
+
+    val props = FargateServiceProps.builder()
+      .cluster(cluster)
+      .taskDefinition(taskDefinition)
+      .desiredCount(1)
+      .enableEcsManagedTags(true)
+      .propagateTags(PropagatedTagSource.SERVICE)
+      .build()
+    new FargateService(this, "datadog-fargate-service", props)
   }
 }
