@@ -36,11 +36,21 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
       val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(1024).build()
       val taskDef = new FargateTaskDefinition(this, s"task-definition", props)
 
-      val container = taskDef.addContainer(
+      val digdagContainer = taskDef.addContainer(
         s"digdag-server-container",
         ContainerDefinitionOptions.builder().image(ContainerImage.fromRegistry("myui/digdag-server")).build()
       )
-      container.addPortMappings(PortMapping.builder().containerPort(conf.serverPort).build())
+      digdagContainer.addPortMappings(PortMapping.builder().containerPort(conf.serverPort).build())
+
+      { // Datadog Container
+        val dogContainerOptions = ContainerDefinitionOptions.builder()
+          .image(ContainerImage.fromRegistry("datadog/agent"))
+          .cpu(10)
+          .memoryLimitMiB(256)
+          .environment(Map("DD_API_KEY" -> conf.datadogApiKey, "ECS_FARGATE" -> "true").asJava)
+          .build()
+        taskDef.addContainer("datadog-container", dogContainerOptions)
+      }
 
       taskDef
     }
@@ -54,29 +64,5 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
       .propagateTags(PropagatedTagSource.SERVICE)
       .build()
     new ApplicationLoadBalancedFargateService(this, "digdag-server-fargate-service", props)
-  }
-
-  val datadogService = {
-    val taskDefinition = {
-      val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(512).build()
-      val taskDef = new FargateTaskDefinition(this, "datadog-service", props)
-
-      val containerOptions = ContainerDefinitionOptions.builder()
-        .image(ContainerImage.fromRegistry("datadog/agent"))
-        .environment(Map("DD_API_KEY" -> conf.datadogApiKey, "ECS_FARGATE" -> "true").asJava)
-        .build()
-      taskDef.addContainer("datadog-container", containerOptions)
-
-      taskDef
-    }
-
-    val props = FargateServiceProps.builder()
-      .cluster(cluster)
-      .taskDefinition(taskDefinition)
-      .desiredCount(conf.desiredCount)
-      .enableEcsManagedTags(true)
-      .propagateTags(PropagatedTagSource.SERVICE)
-      .build()
-    new FargateService(this, "datadog-fargate-service", props)
   }
 }
