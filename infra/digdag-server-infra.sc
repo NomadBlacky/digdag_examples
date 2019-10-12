@@ -45,7 +45,7 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
 
       { // Datadog Container
         val dogContainerOptions = ContainerDefinitionOptions.builder()
-          .image(ContainerImage.fromRegistry("datadog/agent"))
+          .image(ContainerImage.fromAsset("./docker/datadog/"))
           .cpu(10)
           .memoryLimitMiB(256)
           .environment(Map("DD_API_KEY" -> conf.datadogApiKey, "ECS_FARGATE" -> "true").asJava)
