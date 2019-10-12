@@ -1,7 +1,7 @@
-import $ivy.`software.amazon.awscdk:core:1.11.0.DEVPREVIEW`, software.amazon.awscdk.core._
-import $ivy.`software.amazon.awscdk:ec2:1.11.0.DEVPREVIEW`, software.amazon.awscdk.services.ec2._
-import $ivy.`software.amazon.awscdk:ecs:1.11.0.DEVPREVIEW`, software.amazon.awscdk.services.ecs._
-import $ivy.`software.amazon.awscdk:ecs-patterns:1.11.0.DEVPREVIEW`, software.amazon.awscdk.services.ecs.patterns._
+import $ivy.`software.amazon.awscdk:core:1.12.0.DEVPREVIEW`, software.amazon.awscdk.core._
+import $ivy.`software.amazon.awscdk:ec2:1.12.0.DEVPREVIEW`, software.amazon.awscdk.services.ec2._
+import $ivy.`software.amazon.awscdk:ecs:1.12.0.DEVPREVIEW`, software.amazon.awscdk.services.ecs._
+import $ivy.`software.amazon.awscdk:ecs-patterns:1.12.0.DEVPREVIEW`, software.amazon.awscdk.services.ecs.patterns._
 import $ivy.`com.github.pureconfig::pureconfig-core:0.12.1`
 import $ivy.`com.github.pureconfig::pureconfig-generic:0.12.1`
 
