@@ -37,11 +37,26 @@ class DigdagServerStack(scope: Construct, stackName: String, conf: DigdagServerS
       val props = FargateTaskDefinitionProps.builder().cpu(256).memoryLimitMiB(1024).build()
       val taskDef = new FargateTaskDefinition(this, s"task-definition", props)
 
-      val digdagContainer = taskDef.addContainer(
-        s"digdag-server-container",
-        ContainerDefinitionOptions.builder().image(ContainerImage.fromAsset("./docker/digdag/")).build()
-      )
-      digdagContainer.addPortMappings(PortMapping.builder().containerPort(conf.serverPort).build())
+      { // Digdag Container
+        val jmxPort = 9010
+        val jvmOpts = List(
+          "-Djava.rmi.server.hostname=127.0.0.1",
+          s"-Dcom.sun.management.jmxremote.rmi.port=$jmxPort",
+          "-Dcom.sun.management.jmxremote.ssl=false",
+          "-Dcom.sun.management.jmxremote.local.only=false",
+          "-Dcom.sun.management.jmxremote.authenticate=false",
+          "-Dcom.sun.management.jmxremote",
+          s"-Dcom.sun.management.jmxremote.port=$jmxPort"
+        ).mkString(" ")
+        val digContainerOptions = ContainerDefinitionOptions.builder()
+          .image(ContainerImage.fromAsset("./docker/digdag/"))
+          .environment(Map("JAVA_TOOL_OPTIONS" -> jvmOpts).asJava)
+          .build()
+        val container = taskDef.addContainer(s"digdag-server-container", digContainerOptions)
+
+        container.addPortMappings(PortMapping.builder().containerPort(conf.serverPort).build())
+        container.addPortMappings(PortMapping.builder().containerPort(jmxPort).build())
+      }
 
       { // Datadog Container
         val dogContainerOptions = ContainerDefinitionOptions.builder()
